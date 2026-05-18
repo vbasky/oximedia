@@ -5,6 +5,13 @@ real code — fix a decoder stage, add a container parser, wire up a new
 hardware-accel backend. It points at the right docs to read first and the
 right code to read after.
 
+> **If you don't have a codec background**, start at the book
+> [`docs/book/`](book/). It's a 26-chapter, ~62,000-word treatment
+> aimed at programmers with streaming experience but no codec
+> internals exposure. Read Chapters 0–2 (segments to pixels, toy
+> decoder, bitstream I/O) before opening the workspace's codec code
+> — the time investment pays back several-fold in onboarding speed.
+
 ## Map of the technical docs
 
 ```text
@@ -41,6 +48,12 @@ Specialised companions: [`ml_guide.md`](ml_guide.md) for the ML pipeline,
 ## Reading order by goal
 
 ### "I want to land code in a video decoder"
+
+If you don't have prior codec internals exposure, start with the
+[book](book/README.md) — Chapters 0–2 plus 5 (pipeline overview) and
+the chapter for the stage you want to work on. ~2–3 hours.
+
+Then:
 
 1. [`codec_internals.md`](codec_internals.md) — read end to end. ~30 min.
 2. [`codec_status.md`](codec_status.md) — find a codec marked
