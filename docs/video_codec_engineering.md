@@ -1,13 +1,20 @@
 # Video Codec Engineering — Comprehensive Curriculum
 
+> **For the long-form book treatment of these topics**, see
+> [`docs/book/`](book/). The book is a 26-chapter, ~62,000-word
+> end-to-end course on video codec engineering aimed at a programmer
+> with streaming experience but no codec background. It starts with
+> "what's inside an HLS segment" (Chapter 0), builds a toy decoder
+> (Chapter 1), then walks the full pipeline stage by stage. The
+> curriculum below is the original map; the book is the territory.
+>
 > **Audience.** Anyone who wants to be a *serious* video codec engineer.
 > Not "I can integrate FFmpeg" — actually understand what a decoder is
 > doing at the bit level, why every modern codec has the shape it does,
 > and where the open problems are.
 >
-> **Companion docs** (all in this repo). This is the map; each topic
-> below points at the existing doc that covers it in depth, and fills
-> in the gaps where there isn't one yet:
+> **Companion docs** (all in this repo). This curriculum is the map;
+> each topic below points at the deeper-treatment doc:
 >
 > | Existing | Covers |
 > |---|---|
@@ -19,6 +26,7 @@
 > | [`ffmpeg_parity.md`](ffmpeg_parity.md) | Strategic gap analysis vs FFmpeg |
 > | [`simd_dispatch.md`](simd_dispatch.md) | SIMD strategy in the workspace |
 > | [`onboarding.md`](onboarding.md) | First-day reading order |
+> | [`book/`](book/) | Full 26-chapter textbook treatment (start with [`book/README.md`](book/README.md)) |
 
 This doc adds the parts that aren't in any of those: the *theory*
 (information theory, RD optimization), the *deep mechanics* (CABAC,
