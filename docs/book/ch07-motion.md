@@ -22,6 +22,7 @@ prediction, merge mode) leak into how the decoder reads its inputs.
 ## 7.1 The motion compensation primitive
 
 Given:
+
 - A reference frame `ref` (sitting in the DPB).
 - A block position `(x, y)` in the current frame.
 - A motion vector `(mv_x, mv_y)` saying "this block in the current
@@ -205,6 +206,7 @@ Bitstream:      0  3  1  2  6  4  5
 ```
 
 The container carries two timestamps per frame:
+
 - **PTS** (presentation timestamp): when to display.
 - **DTS** (decode timestamp): when to decode.
 
@@ -237,6 +239,7 @@ Estimation (encoder) is the hard part; compensation (decoder) is
 trivial. For completeness, here's the encoder's job:
 
 For each block of the current frame:
+
 1. **Search** for the best-matching block in the reference frame.
 2. **Sub-pel refinement** — refine the integer-grid match with
    ¼-pixel resolution.
@@ -292,6 +295,7 @@ Each of these gets a few lines per chapter in the spec — but the
 ## 7.9 Decoder vs encoder workload (motion-specific)
 
 For the **decoder**:
+
 - Fetch a block from the reference at integer or sub-pel offset.
 - Apply a 6/7/8-tap interpolation filter.
 - Average with another fetch if bi-prediction.
@@ -303,6 +307,7 @@ per-pixel), which is why every production decoder has heavily SIMD'd
 motion compensation kernels.
 
 For the **encoder**:
+
 - Search dozens (fast) to hundreds (slow) of candidate MV positions
   per block, each requiring SAD or SATD computation.
 - Rate-distortion-evaluate the top candidates.

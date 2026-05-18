@@ -190,6 +190,7 @@ header into a struct, validate, then proceed" is the same.
 ## 1.4 The zigzag table
 
 The DCT produces coefficients arranged in a 2D 8×8 block where:
+
 - The **top-left** entry is the **DC** coefficient (the block's
   average).
 - Coefficients toward the top-left are **low frequency** (smooth).
@@ -388,6 +389,7 @@ fn idct_1d(input: &[f32; 8]) -> [f32; 8] {
 ```
 
 For correctness in a real implementation, the 1D IDCT is either:
+
 - A direct matrix multiply (slow but trivially correct), or
 - A "fast IDCT" that exploits the cosine symmetry — the **AAN
   algorithm** for JPEG, **Loeffler-Lichtenberg-Moschytz** for many

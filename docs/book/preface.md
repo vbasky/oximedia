@@ -99,10 +99,10 @@ When this book makes a claim that isn't self-evident — "the H.264
 deblocking filter uses a 4-tap filter on weak edges and a 5-tap on
 strong" — there will be a numbered citation. The full bibliography
 lives in [`bibliography.md`](bibliography.md). I have deliberately not
-embedded URLs into citations: the URLs go stale, and an author + title
-+ year + venue is enough for any search engine. The exception is
-official ITU and AOM documents, which are freely downloadable and
-which I'd want you to read first-hand.
+embedded URLs into citations: the URLs go stale, and an
+author + title + year + venue is enough for any search engine. The
+exception is official ITU and AOM documents, which are freely
+downloadable and which I'd want you to read first-hand.
 
 ## Acknowledgments
 

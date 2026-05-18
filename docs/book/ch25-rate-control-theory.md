@@ -192,7 +192,7 @@ Roughly: each scene has a measured R-vs-QP function from pass 1. The
 encoder wants a target total bitrate. So it picks a global λ such
 that:
 
-```
+```text
 sum over scenes [ R(scene, λ) ] = total_target_bits
 ```
 
@@ -237,7 +237,7 @@ has R and D contributions.
 
 For each choice, the encoder evaluates:
 
-```
+```text
 J_candidate = D_candidate + λ · R_candidate
 ```
 

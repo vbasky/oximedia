@@ -298,4 +298,5 @@ detailed mechanics.
 
 ---
 
-End of Part II. Next: [Chapter 14 — Codec Architectures (H.264, HEVC, AV1, VP9, MPEG-2, VVC)](ch14-codec-architectures.md).
+End of Part II. Next:
+[Chapter 14 — Codec Architectures (H.264, HEVC, AV1, VP9, MPEG-2, VVC)](ch14-codec-architectures.md).

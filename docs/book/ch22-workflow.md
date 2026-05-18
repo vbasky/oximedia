@@ -178,6 +178,7 @@ Audio sync is the #1 viewer complaint when broken:
 - ±500ms is clearly out of sync.
 
 Audio drift accumulates from:
+
 - Resampling mismatches at conversion stages.
 - Wrong sample rate tags.
 - Variable-frame-rate video without proper PTS handling.

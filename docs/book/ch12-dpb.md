@@ -70,6 +70,7 @@ encodes POC indirectly (via `pic_order_cnt_lsb` and PPS-level
 configuration); the decoder computes the full POC from the bits.
 
 To emit a frame:
+
 - Find the frame in the DPB with the smallest POC that hasn't been
   emitted yet, **and** all earlier-POC frames have already been
   emitted.
@@ -93,6 +94,7 @@ most streaming encoders.
 ### Adaptive (explicit commands)
 
 The slice header can contain explicit commands:
+
 - `MMCO 1`: mark short-term picture N as no longer used.
 - `MMCO 2`: mark long-term picture N as no longer used.
 - `MMCO 3`: convert short-term picture N to long-term.
@@ -264,6 +266,7 @@ What happens if a frame is corrupted or missing?
   the next IDR.
 
 The decoder's options:
+
 - Drop the corrupted frame and any frames that reference it.
 - Substitute a previous good frame as the reference (and accept
   drift).

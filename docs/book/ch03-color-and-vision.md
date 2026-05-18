@@ -88,7 +88,7 @@ A color space is, at a minimum, three things:
    0.3127, y = 0.3290), corresponding to roughly 6504 K. For print
    it's D50.
 3. **Transfer function.** How code values map to linear light. This is
-   so important it gets its own chapter ([Chapter 3](ch03-transfer-and-hdr.md)).
+   so important it gets its own chapter ([Chapter 4](ch04-transfer-and-hdr.md)).
 
 ### Standard color spaces
 
@@ -148,6 +148,7 @@ of one channel predicts the others. Compressing them independently
 wastes bits.
 
 YCbCr trades three correlated channels for:
+
 - **Y** — luma, the brightness channel (highly correlated to human
   brightness perception).
 - **Cb** — blue minus luma (chrominance "blue-yellow" axis).
