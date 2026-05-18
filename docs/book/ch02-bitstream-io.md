@@ -361,7 +361,7 @@ your own. Some conventions to internalize:
 
 The spec uses C-like pseudo-code throughout:
 
-```
+```text
 nal_unit_type = nal_unit_header( ) & 0x1F
 if( nal_unit_type == 7 )
     seq_parameter_set_data( )

@@ -123,6 +123,7 @@ This exploits the spatial correlation of mode decisions — adjacent
 blocks tend to choose similar prediction directions.
 
 For the H.264 4×4 case:
+
 - 1 bit signals "use most probable mode"
 - If 0, 3 more bits give the explicit mode index (0–8 with one
   exclusion)

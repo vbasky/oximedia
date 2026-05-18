@@ -332,8 +332,8 @@ in this order. They differ only in:
   asymmetric DST variants.
 - **Entropy coder.** CAVLC or CABAC for H.264; range coder for VP9 and
   AV1.
-- **In-loop filters.** Deblocking for H.264 / HEVC; deblocking + CDEF
-  + loop restoration for AV1.
+- **In-loop filters.** Deblocking for H.264 / HEVC;
+  deblocking + CDEF + loop restoration for AV1.
 
 **Every chapter from here on unpacks one of these stages, in enough
 detail that you can implement it.**
@@ -432,9 +432,11 @@ Spend 30 minutes on the following. It will save you hours later.
    have names and values.
 
 5. Decode to raw YUV:
-   ```sh
+
+```sh
    ffmpeg -i segment1.m4s -c:v rawvideo -pix_fmt yuv420p out.yuv
-   ```
+```
+
    Note the file size. Compute the ratio: YUV size ÷ segment size.
    That number — somewhere between 50× and 500× — is the compression
    ratio your codec achieved on this content.

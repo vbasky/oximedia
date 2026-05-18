@@ -108,6 +108,7 @@ You can have one segment set serving every streaming protocol.
 ### Constraints
 
 CMAF segments must:
+
 - Use specific brand identifiers (`cmf2`, `cmfc`, etc.).
 - Have IDR at segment start.
 - Use predictable timestamp scaling.
@@ -167,6 +168,7 @@ encoder cost." This matrix is the starting point.
 A typical 2026 ABR ladder serves multiple codecs and multiple
 bitrates:
 
+<!-- prettier-ignore -->
 ```text
 H.264 ladder:    240p 400kbps → 360p 800k → 480p 1.5M → 720p 3M → 1080p 5M
 HEVC ladder:                            → 480p 700k → 720p 1.5M → 1080p 3M → 4K HDR 10M
@@ -174,6 +176,7 @@ AV1 ladder:                             → 720p 1M  → 1080p 2M → 4K 6M
 ```
 
 A modern player selects:
+
 - First, the best codec the client supports (AV1 > HEVC > H.264).
 - Then, the best bitrate within that codec given network conditions.
 
@@ -190,7 +193,7 @@ client is a consumer.
 If you're building a player that includes oximedia decoders, your
 streaming stack might look like:
 
-```
+```text
 HLS / DASH manifest parser
    ↓
 ABR logic (rendition selection)

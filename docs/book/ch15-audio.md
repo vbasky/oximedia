@@ -114,6 +114,7 @@ Key elements:
 ### Containers
 
 AAC payloads ride in:
+
 - **ADTS** (raw streaming) — each packet has a small header.
 - **LATM** (broadcast) — alternative streaming wrapper.
 - **MP4** — packed as sample boxes in the `mdat`.
@@ -174,6 +175,7 @@ ladder's default.
 ## 15.5 AC-3 and E-AC-3 (broadcast)
 
 Dolby Digital, used in:
+
 - DVDs and Blu-rays.
 - ATSC, DVB, ARIB broadcast (every TV's audio decoder has AC-3
   built-in).
@@ -183,11 +185,13 @@ Dolby Digital, used in:
 is the 2005 extension with better quality and bitrate flexibility.
 
 Conceptually similar to AAC:
+
 - MDCT-based.
 - Per-band scale factors.
 - Huffman-coded.
 
 Adds:
+
 - **Coupling**: combines high-frequency content across channels,
   saving bits.
 - **Rematrixing**: similar to MS Stereo for >2-channel content.
@@ -242,11 +246,13 @@ in a separate track. The container plumbing is identical to video
 (see Chapter 16).
 
 For HLS legacy TS:
+
 - Audio frames are packed in PES packets, same as video.
 - Multiple audio tracks (different languages, different codecs) appear
   as separate PIDs.
 
 For DASH / CMAF:
+
 - Audio tracks are separate adaptations in the manifest.
 - Each segment is an fMP4 file with audio samples in `mdat`.
 

@@ -8,3 +8,15 @@
 # invalidate dependency caches.
 [target.'cfg(windows)']
 rustflags = ["-C", "link-arg=/STACK:8388608"]
+
+# shaderc-sys (pulled in transitively by vulkano) only searches /usr/local/lib
+# on macOS, missing Homebrew's Apple Silicon prefix at /opt/homebrew/lib.
+# Point it at the brew-installed libshaderc so it doesn't fall back to a
+# from-source build (which fails under CMake >= 4 due to the bundled
+# `cmake_minimum_required(<3.5)` directive).
+[env]
+SHADERC_LIB_DIR = "/opt/homebrew/lib"
+# Pin pyo3 to the Homebrew python3 binary. Otherwise pyo3-build-config can
+# resolve `python3-config --prefix` into the framework's `bin/python`, which
+# Homebrew's python@3.14 does not provide (only `python3` / `python3.14`).
+PYO3_PYTHON = "/opt/homebrew/bin/python3"

@@ -289,6 +289,7 @@ What does an engineer ship with today?
 - **VVC** — early adoption only; will become important by 2027–2028.
 
 A typical streaming infrastructure ladder in 2026:
+
 - H.264 baseline for ancient devices.
 - H.264 main/high for SD/HD streaming.
 - HEVC for UHD on supported devices.

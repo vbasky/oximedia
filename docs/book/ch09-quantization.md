@@ -61,6 +61,7 @@ step_size(QP) = base_step × 2^((QP - 4) / 6)
 ```
 
 So:
+
 - QP 4 → step 1 (essentially lossless)
 - QP 10 → step 2
 - QP 16 → step 4
@@ -83,6 +84,7 @@ exponential shape is the same.
 You don't derive these mappings. You transcribe them from the spec.
 
 For H.264:
+
 ```rust
 fn step_size_h264(qp: u8) -> u16 {
     static QSTEP: [u16; 6] = [10, 11, 13, 14, 16, 18];
@@ -120,6 +122,7 @@ Example H.264 default intra 8×8 luma matrix:
 ```
 
 Read top-to-bottom and left-to-right, value increases:
+
 - Top-left (DC): 6 — small step, preserve precision.
 - Bottom-right (high frequency): 42 — large step, throw it away.
 
@@ -134,6 +137,7 @@ Two scalings: the matrix shapes the noise, QP scales overall.
 ### Matrix signaling
 
 Codecs let the encoder either:
+
 - **Use the default matrices** (small bit cost; signal just an index).
 - **Send custom matrices** in the PPS / sequence header — bigger
   upfront cost, can be tuned to specific content.

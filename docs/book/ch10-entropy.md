@@ -154,6 +154,7 @@ within usable bit precision. The bits shifted out during renormalization
 form the output bitstream.
 
 The state machine is:
+
 - Maintain `low` and `high` (the interval bounds, as 16- or 32-bit
   integers).
 - When the high bit of `low` matches the high bit of `high`, both
@@ -333,14 +334,15 @@ For each block at stage 5 of the pipeline:
 1. The decoder knows the codec (and thus the entropy coder type).
 2. For each field needed:
    a. Determine the context (from spec rules based on
-      neighbours / prior bins).
+   neighbours / prior bins).
    b. Read bins (CABAC) / symbols (range coder) using the entropy
-      coder's state machine.
+   coder's state machine.
    c. Update context state.
 3. Assemble bins/symbols into the field's value.
 4. Move on.
 
 The implementer's job:
+
 - Implement the arithmetic / range coder state machine (~200 lines).
 - Implement each context selection rule (lots of small, table-driven
   logic).

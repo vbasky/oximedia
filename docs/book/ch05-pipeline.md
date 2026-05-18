@@ -176,6 +176,7 @@ Same block, two paths:
 
 **Intra prediction (Chapter 6).** Use already-decoded neighbouring
 pixels. The selected mode determines the formula:
+
 - Mode 0 (vertical): copy the row above downward.
 - Mode 1 (horizontal): copy the column to the left rightward.
 - Mode 2 (DC): use the average of neighbours.
@@ -186,6 +187,7 @@ guess at what this block looks like.
 
 **Inter prediction (Chapter 7).** Use a reference frame already in
 the DPB. Side info gave you `(ref_idx, mv_x, mv_y)`. The decoder:
+
 1. Looks up the reference frame at `ref_idx`.
 2. Fetches a block at `(mv_x, mv_y)` from that frame.
 3. If the MV has sub-pixel precision, applies an interpolation filter.
@@ -218,7 +220,7 @@ block area (16 for 4×4, 64 for 8×8, etc.), still in scan order
 Multiply each coefficient by its quantization step. For codecs using
 a quantization matrix, this means:
 
-```
+```text
 coeff_dequantized[i][j] = coeff[i][j] × Q_matrix[i][j] × scale(QP)
 ```
 
@@ -247,7 +249,7 @@ range like [−2048, 2047] before clamping.
 
 The reconstruction:
 
-```
+```text
 reconstructed[i][j] = clamp(prediction[i][j] + residual[i][j],
                              0, (1 << bit_depth) - 1)
 ```

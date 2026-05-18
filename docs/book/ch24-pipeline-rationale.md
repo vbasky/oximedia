@@ -223,12 +223,14 @@ Let's flip the pipeline backwards: entropy decode → dequantize → IDCT
 *undoes* what the encoder did, in reverse order of when it happened.
 
 The encoder did:
-```
+
+```text
 predict → subtract prediction (residual) → transform → quantize → entropy encode
 ```
 
 The decoder does the inverse, in reverse:
-```
+
+```text
 entropy decode → dequantize → inverse transform → add prediction
 ```
 
@@ -352,9 +354,9 @@ themselves.
   of the pipeline.
 - **[Sullivan2012]** §II — HEVC architectural overview.
 - **[Chen2020]** §1–2 — AV1's pipeline organization.
-- **[Wallace1991]** — the original JPEG paper. JPEG's predict-only-DC
-  + DCT + zigzag + Huffman is the spiritual ancestor of every modern
-  codec's pipeline.
+- **[Wallace1991]** — the original JPEG paper. JPEG's
+  predict-only-DC + DCT + zigzag + Huffman is the spiritual ancestor
+  of every modern codec's pipeline.
 
 ## 24.11 Exercises
 

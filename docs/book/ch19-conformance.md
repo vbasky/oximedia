@@ -66,6 +66,7 @@ For each test bitstream:
 This is essentially a giant snapshot test. Run it on every change.
 
 In practice you'd integrate this into CI:
+
 - New PR? Run conformance suite.
 - Any failure? Block the merge.
 

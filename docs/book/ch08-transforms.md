@@ -94,6 +94,7 @@ the inverse — the DCT matrix is orthonormal).
 You will essentially never write this code from scratch in a real
 codec. Real codecs specify *integer approximations* of these formulas
 that:
+
 - Are bit-exact across implementations.
 - Use small-integer math (no floating-point).
 - Have a well-defined sequence of shifts and adds matching a

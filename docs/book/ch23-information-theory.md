@@ -43,7 +43,7 @@ medium-sized C program.
   information.
 - Array B: can probably be compressed to ~200 KB. Most bytes are
   predictable from the surrounding bytes (curly braces follow function
-  signatures, `int ` precedes variable names, English-language
+  signatures, `int` precedes variable names, English-language
   comments follow word-frequency patterns).
 
 **The size of the file isn't the same as the amount of information in
@@ -421,6 +421,7 @@ Output: a single number. "Codec A has -40% BD-rate vs Codec B" means A
 uses 40% fewer bits to achieve the same quality.
 
 Numbers people throw around:
+
 - H.264 → HEVC: ~50% BD-rate savings.
 - HEVC → AV1: ~20% BD-rate savings.
 - HEVC → VVC: ~50% BD-rate savings.

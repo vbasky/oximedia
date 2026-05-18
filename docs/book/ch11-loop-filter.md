@@ -73,6 +73,7 @@ p3 p2 p1 p0 | q0 q1 q2 q3        (block boundary in middle)
 ```
 
 Apply a gradient-based test:
+
 - If `|p0 - q0| < α` (threshold) and `|p1 - p0| < β` and `|q1 - q0| < β`:
   the edge is *smooth* — filter aggressively.
 - Otherwise: filter weakly or not at all.

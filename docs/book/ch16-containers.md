@@ -292,6 +292,7 @@ string and actual stream content are a real-world cause of "decoder
 doesn't work" bugs.
 
 These strings are defined in:
+
 - **RFC 6381** — the format.
 - **ISO/IEC 14496-15** — for H.264 / HEVC mappings.
 - **AOM AV1 spec** — for AV1.
