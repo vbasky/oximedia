@@ -892,43 +892,28 @@ async fn run_stats(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::atomic::{AtomicU64, Ordering};
 
-    /// Per-process atomic counter for the scopes test temp input.
-    ///
-    /// Combined with the process id, thread id and a nanosecond timestamp this
-    /// guarantees a unique filename for every `temp_input()` invocation, even
-    /// when several test processes (e.g. nextest workers) execute in parallel
-    /// on the same machine.  See issue #16.
-    static TEMP_INPUT_COUNTER: AtomicU64 = AtomicU64::new(0);
-
+    // Shared Y4M test fixture. Written exactly once per test process via
+    // OnceLock so parallel tests don't race on the file. The PID suffix keeps
+    // concurrent `cargo test` invocations from clobbering each other's input.
     fn temp_input() -> PathBuf {
-        let pid = std::process::id();
-        let tid = format!("{:?}", std::thread::current().id());
-        // Strip non-alphanumeric characters from the Debug-formatted ThreadId
-        // so the resulting filename stays portable (Windows in particular
-        // dislikes parentheses and spaces in path components).
-        let tid_sanitised: String = tid.chars().filter(|c| c.is_ascii_alphanumeric()).collect();
-        let counter = TEMP_INPUT_COUNTER.fetch_add(1, Ordering::Relaxed);
-        let nanos = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_nanos())
-            .unwrap_or(0);
-        let filename =
-            format!("oximedia_scopes_test_input_{pid}_{tid_sanitised}_{counter}_{nanos}.y4m");
-        let path = std::env::temp_dir().join(filename);
-        // Minimal 64×64 YUV420 Y4M with three black frames (run_stats needs up to 3)
-        let mut data = b"YUV4MPEG2 W64 H64 F25:1 Ip A0:0 C420\n".to_vec();
-        for _ in 0..3 {
-            data.extend_from_slice(b"FRAME\n");
-            // Y plane: 64*64 = 4096 bytes (black = 16 in studio swing)
-            data.extend(std::iter::repeat(16u8).take(64 * 64));
-            // U and V planes: 32*32 = 1024 bytes each (neutral = 128)
-            data.extend(std::iter::repeat(128u8).take(32 * 32));
-            data.extend(std::iter::repeat(128u8).take(32 * 32));
-        }
-        std::fs::write(&path, &data).expect("failed to write Y4M temp file");
-        path
+        static PATH: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+        PATH.get_or_init(|| {
+            let path = std::env::temp_dir().join(format!(
+                "oximedia_scopes_test_input_{}.y4m",
+                std::process::id()
+            ));
+            let mut data = b"YUV4MPEG2 W64 H64 F25:1 Ip A0:0 C420\n".to_vec();
+            for _ in 0..3 {
+                data.extend_from_slice(b"FRAME\n");
+                data.extend(std::iter::repeat(16u8).take(64 * 64));
+                data.extend(std::iter::repeat(128u8).take(32 * 32));
+                data.extend(std::iter::repeat(128u8).take(32 * 32));
+            }
+            std::fs::write(&path, &data).expect("failed to write Y4M temp file");
+            path
+        })
+        .clone()
     }
 
     #[tokio::test]
