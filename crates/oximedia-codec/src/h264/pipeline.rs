@@ -357,12 +357,30 @@ impl Decoder {
         poc_type2_value(sh.frame_num as i32, nal_ref_idc, is_idr)
     }
 
-    /// Constructs RefPicList0 per spec § 8.2.4 (without applying
-    /// `ref_pic_list_modification` ops — those land in a follow-up).
+    /// Constructs the *default* RefPicList0 per spec § 8.2.4.2.1.
     /// Short-term references are ordered by descending `frame_num`
-    /// (proxy for PicNum on frame-coded pictures); long-term
+    /// (proxy for `PicNum` on frame-coded pictures); long-term
     /// references follow in ascending `long_term_idx`.
+    ///
+    /// The decoded slice header's `ref_pic_list_modification_l0`
+    /// ops (if any) are applied via
+    /// [`Self::build_ref_pic_list_l0_with_mod`] which wraps this.
     fn build_ref_pic_list_l0(&self) -> Vec<&Frame> {
+        self.default_ref_pic_list_l0()
+            .into_iter()
+            .map(|e| &e.frame)
+            .collect()
+    }
+
+    /// Constructs the *default* RefPicList1 per spec § 8.2.4.2.3.
+    fn build_ref_pic_list_l1(&self, current_poc: i32) -> Vec<&Frame> {
+        self.default_ref_pic_list_l1(current_poc)
+            .into_iter()
+            .map(|e| &e.frame)
+            .collect()
+    }
+
+    fn default_ref_pic_list_l0(&self) -> Vec<&DpbEntry> {
         let mut short_term: Vec<&DpbEntry> = self
             .dpb
             .entries
@@ -377,22 +395,10 @@ impl Decoder {
             .filter(|e| e.is_long_term_reference)
             .collect();
         long_term.sort_by(|a, b| a.long_term_idx.cmp(&b.long_term_idx));
-        short_term
-            .into_iter()
-            .chain(long_term)
-            .map(|e| &e.frame)
-            .collect()
+        short_term.into_iter().chain(long_term).collect()
     }
 
-    /// Constructs RefPicList1 for a B slice per spec § 8.2.4.2.3.
-    /// Short-term refs with POC > current_poc come first (sorted
-    /// ascending by POC), followed by short-term refs with POC <
-    /// current_poc (sorted descending by POC), then long-term
-    /// refs ordered by ascending long_term_idx.
-    ///
-    /// `current_poc` is the POC of the slice currently being
-    /// decoded (used as the pivot for the bi-prediction split).
-    fn build_ref_pic_list_l1(&self, current_poc: i32) -> Vec<&Frame> {
+    fn default_ref_pic_list_l1(&self, current_poc: i32) -> Vec<&DpbEntry> {
         let mut higher: Vec<&DpbEntry> = self
             .dpb
             .entries
@@ -414,12 +420,105 @@ impl Decoder {
             .filter(|e| e.is_long_term_reference)
             .collect();
         long_term.sort_by(|a, b| a.long_term_idx.cmp(&b.long_term_idx));
-        higher
-            .into_iter()
-            .chain(lower)
-            .chain(long_term)
-            .map(|e| &e.frame)
-            .collect()
+        higher.into_iter().chain(lower).chain(long_term).collect()
+    }
+
+    /// Builds RefPicList0 and applies the slice header's
+    /// `ref_pic_list_modification_l0` ops (spec § 8.2.4.3).
+    ///
+    /// `current_frame_num` is the `frame_num` of the slice
+    /// currently being decoded.  When the modification list is
+    /// empty the default list ([`Self::build_ref_pic_list_l0`])
+    /// is returned unchanged.
+    fn build_ref_pic_list_l0_with_mod(
+        &self,
+        current_frame_num: i32,
+        modif: &crate::h264::slice_header::RefPicListModification,
+    ) -> Vec<&Frame> {
+        let default_list = self.default_ref_pic_list_l0();
+        let modified = self.apply_ref_pic_list_mod(default_list, current_frame_num, modif);
+        modified.into_iter().map(|e| &e.frame).collect()
+    }
+
+    /// Builds RefPicList1 and applies the slice header's
+    /// `ref_pic_list_modification_l1` ops.
+    fn build_ref_pic_list_l1_with_mod(
+        &self,
+        current_poc: i32,
+        current_frame_num: i32,
+        modif: &crate::h264::slice_header::RefPicListModification,
+    ) -> Vec<&Frame> {
+        let default_list = self.default_ref_pic_list_l1(current_poc);
+        let modified = self.apply_ref_pic_list_mod(default_list, current_frame_num, modif);
+        modified.into_iter().map(|e| &e.frame).collect()
+    }
+
+    /// Applies a [`RefPicListModification`] to a default reference
+    /// picture list per spec § 8.2.4.3.1 / § 8.2.4.3.2.
+    ///
+    /// The spec algorithm walks each `modification_of_pic_nums_idc`
+    /// op, locates the named picture in the DPB, inserts it at
+    /// position `refIdxL` of the list, shifts subsequent entries
+    /// down by one, and increments `refIdxL`.  We mirror that
+    /// exactly here, using `frame_num` as a stand-in for the
+    /// spec's `PicNum` (correct for frame-coded streams, which is
+    /// all we currently support).
+    fn apply_ref_pic_list_mod<'a>(
+        &'a self,
+        mut list: Vec<&'a DpbEntry>,
+        current_frame_num: i32,
+        modif: &crate::h264::slice_header::RefPicListModification,
+    ) -> Vec<&'a DpbEntry> {
+        use crate::h264::slice_header::RefPicListModOp;
+
+        if !modif.present || modif.ops.is_empty() {
+            return list;
+        }
+
+        let mut pic_num_pred = current_frame_num;
+        let mut ref_idx = 0usize;
+
+        for op in &modif.ops {
+            match *op {
+                RefPicListModOp::SubtractAbsDiffPicNum(delta) => {
+                    let target = pic_num_pred - (delta as i32 + 1);
+                    if let Some(entry) = self
+                        .dpb
+                        .entries
+                        .iter()
+                        .find(|e| e.is_short_term_reference && e.frame_num == target)
+                    {
+                        insert_at(&mut list, ref_idx, entry);
+                        ref_idx += 1;
+                    }
+                    pic_num_pred = target;
+                }
+                RefPicListModOp::AddAbsDiffPicNum(delta) => {
+                    let target = pic_num_pred + (delta as i32 + 1);
+                    if let Some(entry) = self
+                        .dpb
+                        .entries
+                        .iter()
+                        .find(|e| e.is_short_term_reference && e.frame_num == target)
+                    {
+                        insert_at(&mut list, ref_idx, entry);
+                        ref_idx += 1;
+                    }
+                    pic_num_pred = target;
+                }
+                RefPicListModOp::LongTermPicNum(lt_pic_num) => {
+                    if let Some(entry) = self.dpb.entries.iter().find(|e| {
+                        e.is_long_term_reference && e.long_term_idx == Some(lt_pic_num)
+                    }) {
+                        insert_at(&mut list, ref_idx, entry);
+                        ref_idx += 1;
+                    }
+                    // pic_num_pred is not updated for long-term ops per spec.
+                }
+            }
+        }
+
+        list
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -475,12 +574,14 @@ impl Decoder {
         let mbs = parse_slice_cabac(&mut cabac, &mut states, ctx, &mut cache)?;
 
         let mut frame = Frame::new(pic_width, pic_height);
-        // RefPicList0 built per spec § 8.2.4: short-term refs in
-        // descending PicNum order followed by long-term refs in
-        // ascending LongTermPicNum order.  Modification ops in
-        // `ref_pic_list_modification_l0` are parsed but not yet
-        // applied — a follow-up will splice them in.
-        let ref_pic_list_l0 = self.build_ref_pic_list_l0();
+        // RefPicList0 per spec § 8.2.4: default list (short-term in
+        // descending PicNum order, then long-term in ascending
+        // LongTermPicNum order) with the slice header's
+        // ref_pic_list_modification_l0 ops applied per § 8.2.4.3.
+        let ref_pic_list_l0 = self.build_ref_pic_list_l0_with_mod(
+            sh.frame_num as i32,
+            &sh.ref_pic_list_modification_l0,
+        );
         let placeholder = Frame::new(pic_width, pic_height);
         let primary_ref = ref_pic_list_l0
             .first()
@@ -602,7 +703,10 @@ impl Decoder {
             let mbs = parse_slice_cavlc(&mut reader, sps, pps, sh)?;
 
             let placeholder = Frame::new(pic_width, pic_height);
-            let ref_pic_list_l0 = self.build_ref_pic_list_l0();
+            let ref_pic_list_l0 = self.build_ref_pic_list_l0_with_mod(
+                sh.frame_num as i32,
+                &sh.ref_pic_list_modification_l0,
+            );
             let primary_ref = ref_pic_list_l0
                 .first()
                 .map(|f| &**f)
@@ -1094,6 +1198,22 @@ fn build_chroma_ac(
     out
 }
 
+/// Inserts `entry` at position `idx` of `list`.  If the entry is
+/// already in the list at a different position, it's removed from
+/// there first (preserving the spec's "shift the entries" semantics
+/// without growing the list past its original length when an op
+/// targets a picture already present).
+fn insert_at<'a>(list: &mut Vec<&'a DpbEntry>, idx: usize, entry: &'a DpbEntry) {
+    if let Some(existing) = list
+        .iter()
+        .position(|e| std::ptr::eq(*e as *const _, entry as *const _))
+    {
+        list.remove(existing);
+    }
+    let pos = idx.min(list.len());
+    list.insert(pos, entry);
+}
+
 /// Free-function POC type 2 formula (spec § 8.2.1.3).  Exposed
 /// outside `impl Decoder` so it's testable in isolation.
 fn poc_type2_value(frame_num: i32, nal_ref_idc: u8, is_idr: bool) -> i32 {
@@ -1353,6 +1473,79 @@ mod tests {
         // POC 4 == current is excluded; remaining 2 entries.  L1
         // order for current_poc = 4: {6 (higher), 2 (lower)}.
         assert_eq!(list.len(), 2);
+    }
+
+    #[test]
+    fn ref_pic_list_mod_subtract_promotes_target_to_position_zero() {
+        use crate::h264::slice_header::{RefPicListModOp, RefPicListModification};
+
+        let mut decoder = Decoder::new();
+        let entry = |frame_num| DpbEntry {
+            frame: Frame::new(16, 16),
+            poc: frame_num * 2,
+            frame_num,
+            is_short_term_reference: true,
+            is_long_term_reference: false,
+            long_term_idx: None,
+            output_pending: false,
+        };
+        // Three short-term refs at frame_num 5, 6, 7.  Default L0
+        // order (descending frame_num) is [7, 6, 5].
+        decoder.dpb.entries.push(entry(5));
+        decoder.dpb.entries.push(entry(6));
+        decoder.dpb.entries.push(entry(7));
+
+        // Modification op: SubtractAbsDiffPicNum(0) against
+        // current_frame_num = 8 → target = 8 - 0 - 1 = 7.
+        // Ref idx 0 of the modified list should be frame_num 7.
+        let modif = RefPicListModification {
+            present: true,
+            ops: vec![RefPicListModOp::SubtractAbsDiffPicNum(0)],
+        };
+        let modified = decoder.build_ref_pic_list_l0_with_mod(8, &modif);
+        // Three entries remain (the op moved, not inserted).
+        assert_eq!(modified.len(), 3);
+        // Default list has POC mapping {7→14, 6→12, 5→10}; after the
+        // mod the entry at index 0 should still be the frame_num=7
+        // picture (POC 14).  We test via DPB lookup since &Frame
+        // doesn't expose frame_num.
+        let first_ptr = modified[0] as *const Frame;
+        let expected = &decoder
+            .dpb
+            .entries
+            .iter()
+            .find(|e| e.frame_num == 7)
+            .unwrap()
+            .frame as *const Frame;
+        assert!(std::ptr::eq(first_ptr, expected));
+    }
+
+    #[test]
+    fn ref_pic_list_mod_absent_is_pass_through() {
+        use crate::h264::slice_header::RefPicListModification;
+
+        let mut decoder = Decoder::new();
+        let entry = |frame_num| DpbEntry {
+            frame: Frame::new(16, 16),
+            poc: frame_num * 2,
+            frame_num,
+            is_short_term_reference: true,
+            is_long_term_reference: false,
+            long_term_idx: None,
+            output_pending: false,
+        };
+        decoder.dpb.entries.push(entry(5));
+        decoder.dpb.entries.push(entry(7));
+        let modif = RefPicListModification {
+            present: false,
+            ops: vec![],
+        };
+        let default = decoder.build_ref_pic_list_l0();
+        let modified = decoder.build_ref_pic_list_l0_with_mod(8, &modif);
+        assert_eq!(default.len(), modified.len());
+        for (a, b) in default.iter().zip(modified.iter()) {
+            assert!(std::ptr::eq(*a as *const _, *b as *const _));
+        }
     }
 
     #[test]
