@@ -66,6 +66,30 @@ pub enum VtbError {
     /// the numeric code if they need to.
     #[error("VideoToolbox OSStatus {0}")]
     OsStatus(i32),
+
+    /// Generic high-level error with a runtime message — used for
+    /// configuration / shape mismatches that aren't tied to an
+    /// OSStatus.
+    #[error("{0}")]
+    Other(String),
+}
+
+impl StatusContext {
+    /// Convenience: wrap an `OSStatus` plus a free-form context tag
+    /// into a [`Result`].  Used by call sites that want to attach a
+    /// label to the failing API name without choosing a specific
+    /// [`StatusContext`] variant.
+    ///
+    /// The `tag` is the textual name of the API that returned the
+    /// status (e.g. `"AudioConverterNew"`).  Non-zero statuses are
+    /// reported via [`VtbError::Other`] with the tag embedded.
+    pub fn wrap(status: i32, tag: &str) -> Result<()> {
+        if status == 0 {
+            Ok(())
+        } else {
+            Err(VtbError::Other(format!("{tag} failed: OSStatus {status}")))
+        }
+    }
 }
 
 impl VtbError {

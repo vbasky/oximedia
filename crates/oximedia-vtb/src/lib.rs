@@ -29,6 +29,7 @@
 
 #![cfg(any(target_os = "macos", target_os = "ios"))]
 
+pub mod aac;
 pub mod cf;
 pub mod decoder;
 pub mod error;
@@ -36,6 +37,7 @@ pub mod format;
 pub mod nal;
 pub mod session;
 
+pub use aac::{AacDecoder, AacFormat};
 pub use decoder::H264Decoder;
 pub use error::{Result, StatusContext, VtbError};
 pub use format::H264FormatDescription;
