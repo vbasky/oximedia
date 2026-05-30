@@ -6,7 +6,6 @@
 //!
 //! - **H.264** uses RFC 6184: single NAL / STAP-A / FU-A framing.
 //! - **HEVC** uses RFC 7798: single NAL / aggregation / fragmentation.
-//!   (not yet implemented)
 //! - **AAC** uses RFC 3640: AU-headers + bit-aligned AU payload.
 //!   (not yet implemented)
 //! - **Opus** uses RFC 7587: payload = raw Opus frames.
@@ -22,5 +21,7 @@
 //! other RTP source.
 
 pub mod h264;
+pub mod hevc;
 
 pub use h264::{AccessUnit, H264Depacketizer};
+pub use hevc::{HevcAccessUnit, HevcDepacketizer};
